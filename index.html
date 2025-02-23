@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Qubic CLI Interface</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    .section { margin-bottom: 20px; }
+    label { margin-right: 5px; font-weight: bold; }
+    input[type="text"], input[type="number"] { margin-bottom: 5px; padding: 5px; width: 300px; }
+    #logs { border: 1px solid #ccc; padding: 10px; white-space: pre-wrap; background: #f9f9f9; height: 200px; overflow-y: auto; margin-top: 10px; }
+    .param { margin-bottom: 5px; }
+    .field-help { font-size: 0.9em; color: #666; margin-left: 10px; }
+    .command-select { width: 100%; padding: 10px; margin-bottom: 10px; }
+    .command-description { font-size: 1.1em; margin-bottom: 10px; }
+    .param-input { display: flex; align-items: center; margin-bottom: 10px; }
+    .param-input label { flex: 1; }
+    .param-input input { flex: 2; }
+  </style>
+</head>
+<body>
+  <h1>Qubic CLI Interface</h1>
+
+  <!-- Basic Configuration Section -->
+  <div class="section" id="basicConfig">
+    <h2>Basic Configuration</h2>
+    <p>Settings for every command. Use examples if unsure:</p>
+    <div class="param">
+      <label for="conf">Config File (-conf):</label>
+      <input type="text" id="conf" placeholder="e.g. ./qubic.conf.example">
+      <small class="field-help">Path to your configuration file. Leave blank if not needed.</small>
+    </div>
+    <div class="param">
+      <label for="seed">Seed (-seed):</label>
+      <input type="text" id="seed" placeholder="e.g. 55-char seed">
+      <small class="field-help">Your 55-character private seed key (for wallet commands).</small>
+    </div>
+    <div class="param">
+      <label for="nodeip">Node IP (-nodeip):</label>
+      <input type="text" id="nodeip" value="45.152.160.22">
+      <small class="field-help">The IP address of a Qubic Core node (default production: 45.152.160.22).</small>
+    </div>
+    <div class="param">
+      <label for="nodeport">Node Port (-nodeport):</label>
+      <input type="number" id="nodeport"  value="21841">
+      <small class="field-help">Port on which the Qubic Core node listens (default is 21841).</small>
+    </div>
+    <div class="param">
+      <label for="scheduletick">Schedule Tick (-scheduletick):</label>
+      <input type="number" id="scheduletick" placeholder="20">
+      <small class="field-help">Tick offset for scheduling a transaction (default is 20).</small>
+    </div>
+    <div class="param">
+      <label for="force">Force (-force):</label>
+      <input type="checkbox" id="force">
+      <small class="field-help">Check this to override errors (for proposals only).</small>
+    </div>
+  </div>
+
+  <!-- Command Selection Section -->
+  <div class="section" id="commandSection">
+    <h2>Select Command</h2>
+    <p>Choose a command from the list. Commands are grouped by category and include a brief description.
+       For example, if you select <strong>-getbalance</strong>, you’ll be prompted for the <em>IDENTITY</em> to check.</p>
+    <select id="commandSelect" class="command-select">
+      <optgroup label="Basic & Wallet Commands">
+        <option value="-help" title="Display help information about all commands.">-help (Display help)</option>
+        <option value="-showkeys" title="Generate and display keys from your seed.">-showkeys (Show key information)</option>
+        <option value="-getbalance" title="Retrieve the balance for a given identity.">-getbalance (Get balance)</option>
+        <option value="-getasset" title="List assets associated with an identity.">-getasset (List assets)</option>
+        <option value="-queryassets" title="Query asset details (requires type and query string).">-queryassets (Query assets)</option>
+        <option value="-sendtoaddress" title="Send qubic to a specific address.">-sendtoaddress (Send qubic)</option>
+        <option value="-sendtoaddressintick" title="Send qubic at a specific tick.">-sendtoaddressintick (Send qubic in tick)</option>
+        <option value="-qutilsendtomanyv1" title="Perform multiple transactions in one tick using a file.">-qutilsendtomanyv1 (Multiple transactions)</option>
+        <option value="-qutilburnqubic" title="Burn a specified amount of qubic.">-qutilburnqubic (Burn qubic)</option>
+        <option value="-qutilsendtomanybenchmark" title="Benchmark sending multiple transactions.">-qutilsendtomanybenchmark (Benchmark transactions)</option>
+      </optgroup>
+      <optgroup label="Blockchain/Protocol Commands">
+        <option value="-gettickdata" title="Save tick data to a file; requires tick number and output file name.">-gettickdata (Get tick data)</option>
+        <option value="-getquorumtick" title="Get quorum tick data using a computor list file and tick number.">-getquorumtick (Get quorum tick)</option>
+        <option value="-getcomputorlist" title="Retrieve the computor list (output file name required).">-getcomputorlist (Get computor list)</option>
+        <option value="-getnodeiplist" title="List node IPs from a seed node.">-getnodeiplist (List node IPs)</option>
+        <option value="-gettxinfo" title="Get transaction information (requires TX_ID).">-gettxinfo (Get TX info)</option>
+        <option value="-checktxontick" title="Check if a transaction is included in a tick.">-checktxontick (Check TX in tick)</option>
+        <option value="-checktxonfile" title="Check transaction presence in a tick data file.">-checktxonfile (Check TX on file)</option>
+        <option value="-readtickdata" title="Read tick data from a file (requires file name and computor list).">-readtickdata (Read tick data)</option>
+        <option value="-sendcustomtransaction" title="Perform a custom transaction (requires several parameters).">-sendcustomtransaction (Custom transaction)</option>
+        <option value="-dumpspectrumfile" title="Dump a spectrum file into CSV format.">-dumpspectrumfile (Dump spectrum)</option>
+        <option value="-dumpuniversefile" title="Dump a universe file into CSV format.">-dumpuniversefile (Dump universe)</option>
+        <option value="-dumpcontractfile" title="Dump a contract file into CSV (supports contract ID 1-QX).">-dumpcontractfile (Dump contract)</option>
+        <option value="-makeipobid" title="Participate in an IPO (requires contract index, share number, price).">-makeipobid (Participate in IPO)</option>
+        <option value="-getipostatus" title="View IPO status (requires contract index).">-getipostatus (View IPO status)</option>
+        <option value="-getsysteminfo" title="Display current system status (tick, epoch, etc.).">-getsysteminfo (Get system info)</option>
+      </optgroup>
+      <optgroup label="Node Commands">
+        <option value="-getcurrenttick" title="Display the current tick information of a node.">-getcurrenttick (Get current tick)</option>
+        <option value="-sendspecialcommand" title="Send a special command (requires command number).">-sendspecialcommand (Special command)</option>
+        <option value="-togglemainaux" title="Toggle between Main and Aux node modes.">-togglemainaux (Toggle Main/Aux)</option>
+        <option value="-setsolutionthreshold" title="Set the solution threshold (requires epoch and threshold).">-setsolutionthreshold (Set threshold)</option>
+        <option value="-refreshpeerlist" title="Refresh the peer list of a node.">-refreshpeerlist (Refresh peers)</option>
+        <option value="-forcenexttick" title="Force the next tick to be empty.">-forcenexttick (Force next tick)</option>
+        <option value="-reissuevote" title="Re-issue a vote command.">-reissuevote (Re-issue vote)</option>
+        <option value="-sendrawpacket" title="Send a raw packet to the node (requires data in hex and size).">-sendrawpacket (Send raw packet)</option>
+        <option value="-synctime" title="Synchronize node time with your system time.">-synctime (Sync node time)</option>
+        <option value="-getminingscoreranking" title="Get the current mining score ranking.">-getminingscoreranking (Get mining score)</option>
+        <option value="-getvotecountertx" title="Get vote counter info (requires computor list file and tick).">-getvotecountertx (Get vote counter TX)</option>
+      </optgroup>
+      <optgroup label="QX Commands">
+        <option value="-qxgetfee" title="Show the current fee for Qx transactions.">-qxgetfee (Get Qx fee)</option>
+        <option value="-qxissueasset" title="Issue a new asset (requires asset name, unit, and decimals).">-qxissueasset (Issue asset)</option>
+        <option value="-qxtransferasset" title="Transfer an asset (requires asset name, issuer, new owner, and amount).">-qxtransferasset (Transfer asset)</option>
+        <option value="-qxorder" title="Set an order on Qx (requires action, side, issuer, asset, price, and amount).">-qxorder (Set Qx order)</option>
+        <option value="-qxgetorder" title="Get orders on Qx (requires type, side, issuer, asset, and offset).">-qxgetorder (Get Qx orders)</option>
+        <option value="-qxtransferrights" title="Transfer asset management rights (requires asset name, issuer, new contract, and number of shares).">-qxtransferrights (Transfer rights)</option>
+      </optgroup>
+      <optgroup label="QTRY Commands">
+        <option value="-qtrygetbasicinfo" title="Get basic Qtry information.">-qtrygetbasicinfo (Get Qtry info)</option>
+        <option value="-qtryissuebet" title="Issue a new bet.">-qtryissuebet (Issue bet)</option>
+        <option value="-qtrygetactivebet" title="List active bet IDs.">-qtrygetactivebet (Active bet IDs)</option>
+        <option value="-qtrygetactivebetbycreator" title="Get active bets by a creator (requires BET_CREATOR_ID).">-qtrygetactivebetbycreator (Active bets by creator)</option>
+        <option value="-qtrygetbetinfo" title="Get information about a bet (requires BET_ID).">-qtrygetbetinfo (Get bet info)</option>
+        <option value="-qtrygetbetdetail" title="Get detailed bet info (requires BET_ID and OPTION_ID).">-qtrygetbetdetail (Get bet detail)</option>
+        <option value="-qtryjoinbet" title="Join a bet (requires BET_ID, slot count, amount per slot, and chosen option).">-qtryjoinbet (Join bet)</option>
+        <option value="-qtrypublishresult" title="Publish bet result (for oracle providers; requires BET_ID and winning option).">-qtrypublishresult (Publish result)</option>
+        <option value="-qtrycancelbet" title="Cancel a bet (requires BET_ID).">-qtrycancelbet (Cancel bet)</option>
+      </optgroup>
+      <optgroup label="General Quorum Proposal Commands">
+        <option value="-gqmpropsetproposal" title="Set a proposal (requires proposal text).">-gqmpropsetproposal (Set proposal)</option>
+        <option value="-gqmpropclearproposal" title="Clear your current proposal.">-gqmpropclearproposal (Clear proposal)</option>
+        <option value="-gqmpropgetproposals" title="Get proposals (requires an index or 'active'/'finished').">-gqmpropgetproposals (Get proposals)</option>
+        <option value="-gqmpropvote" title="Vote on a proposal (requires proposal index and vote value).">-gqmpropvote (Vote proposal)</option>
+        <option value="-gqmpropgetvote" title="Get your vote on a proposal (requires proposal index, optionally your identity).">-gqmpropgetvote (Get vote)</option>
+        <option value="-gqmpropgetresults" title="Get the results of a proposal (requires proposal index).">-gqmpropgetresults (Get proposal results)</option>
+        <option value="-gqmpropgetrevdonation" title="Get the revenue donation table.">-gqmpropgetrevdonation (Get revenue donation)</option>
+      </optgroup>
+      <optgroup label="CCF Commands">
+        <option value="-ccfsetproposal" title="Set a CCF proposal (requires proposal text).">-ccfsetproposal (Set CCF proposal)</option>
+        <option value="-ccfclearproposal" title="Clear your CCF proposal.">-ccfclearproposal (Clear CCF proposal)</option>
+        <option value="-ccfgetproposals" title="Get CCF proposals (requires an index or group).">-ccfgetproposals (Get CCF proposals)</option>
+        <option value="-ccfvote" title="Vote on a CCF proposal (requires proposal index and vote value).">-ccfvote (Vote CCF)</option>
+        <option value="-ccfgetvote" title="Get your vote on a CCF proposal (requires proposal index, optionally your identity).">-ccfgetvote (Get CCF vote)</option>
+        <option value="-ccfgetresults" title="Get the results of a CCF proposal (requires proposal index).">-ccfgetresults (Get CCF results)</option>
+        <option value="-ccflatesttransfers" title="Get the latest CCF transfers.">-ccflatesttransfers (Latest CCF transfers)</option>
+      </optgroup>
+      <optgroup label="QEARN Commands">
+        <option value="-qearnlock" title="Lock qubic to Qearn SC (requires lock amount).">-qearnlock (Lock qu to Qearn SC)</option>
+        <option value="-qearnunlock" title="Unlock qubic from Qearn SC (requires unlocking amount and locked epoch).">-qearnunlock (Unlock qu from Qearn SC)</option>
+        <option value="-qearngetlockinfoperepoch" title="Get lock info for an epoch (requires epoch number).">-qearngetlockinfoperepoch (Get lock info per epoch)</option>
+        <option value="-qearngetuserlockedinfo" title="Get locked info for a user (requires identity and epoch).">-qearngetuserlockedinfo (Get user locked info)</option>
+        <option value="-qearngetstateofround" title="Get the state of a round (requires epoch number).">-qearngetstateofround (Get round status)</option>
+        <option value="-qearngetuserlockstatus" title="Get the lock status of a user (requires identity).">-qearngetuserlockstatus (Get user lock status)</option>
+        <option value="-qearngetunlockingstatus" title="Get unlocking history for a user (requires identity).">-qearngetunlockingstatus (Get unlocking history)</option>
+        <option value="-qearngetstatsperepoch" title="Get statistics for an epoch (requires epoch number).">-qearngetstatsperepoch (Get stats per epoch)</option>
+        <option value="-qearngetburnedandboostedstats" title="Get overall burned and boosted stats.">-qearngetburnedandboostedstats (Get burned/boosted stats)</option>
+        <option value="-qearngetburnedandboostedstatsperepoch" title="Get burned/boosted stats for an epoch (requires epoch number).">-qearngetburnedandboostedstatsperepoch (Get burned/boosted stats per epoch)</option>
+      </optgroup>
+      <optgroup label="QVAULT Commands">
+        <option value="-qvaultsubmitauthaddress" title="Submit a new authentication address (requires new address).">-qvaultsubmitauthaddress (Submit new auth address)</option>
+        <option value="-qvaultchangeauthaddress" title="Change authentication address (requires number of addresses to change, e.g. 1,2,3).">-qvaultchangeauthaddress (Change auth address)</option>
+        <option value="-qvaultsubmitfees" title="Submit fee permilles (provide values for QcapHolders, Reinvesting, Development).">-qvaultsubmitfees (Submit fee permilles)</option>
+        <option value="-qvaultchangefees" title="Change fee permilles (values must sum to 970; shareHolder is fixed at 30).">-qvaultchangefees (Change fee permilles)</option>
+        <option value="-qvaultsubmitreinvestingaddress" title="Submit a new reinvesting address (requires new address).">-qvaultsubmitreinvestingaddress (Submit reinvesting address)</option>
+        <option value="-qvaultchangereinvestingaddress" title="Change the reinvesting address (requires new address).">-qvaultchangereinvestingaddress (Change reinvesting address)</option>
+        <option value="-qvaultsubmitadminaddress" title="Submit a new admin address (requires new address).">-qvaultsubmitadminaddress (Submit admin address)</option>
+        <option value="-qvaultchangeadminaddress" title="Change the admin address (requires new address).">-qvaultchangeadminaddress (Change admin address)</option>
+        <option value="-qvaultgetdata" title="Retrieve state data from the smart contract.">-qvaultgetdata (Get state data)</option>
+        <option value="-qvaultsubmitbannedaddress" title="Submit an address to be banned (requires the address).">-qvaultsubmitbannedaddress (Submit banned address)</option>
+        <option value="-qvaultsavebannedaddress" title="Save a banned address (requires the address).">-qvaultsavebannedaddress (Save banned address)</option>
+        <option value="-qvaultsubmitunbannedaddress" title="Submit an address to be unbanned (requires the address).">-qvaultsubmitunbannedaddress (Submit unbanned address)</option>
+        <option value="-qvaultsaveunbannedaddress" title="Save an unbanned address (requires the address).">-qvaultsaveunbannedaddress (Save unbanned address)</option>
+      </optgroup>
+      <optgroup label="MSVAULT Commands">
+        <option value="-msvaultregistervault" title="Register a new vault. Example: REQUIRED_APPROVALS (e.g. 2), VAULT_NAME (e.g. MyVault), OWNER_ID_COMMA_SEPARATED (e.g. ID1,ID2)">-msvaultregistervault (Register a new vault)</option>
+        <option value="-msvaultdeposit" title="Deposit qubic into a vault. Example: VAULT_ID (e.g. 1), AMOUNT (e.g. 100)">-msvaultdeposit (Deposit qubic)</option>
+        <option value="-msvaultreleaseto" title="Release qubic from a vault to a destination. Example: VAULT_ID (e.g. 1), AMOUNT (e.g. 100), DESTINATION_IDENTITY (e.g. ID)">-msvaultreleaseto (Release qubic)</option>
+        <option value="-msvaultresetrelease" title="Reset release requests for a vault. Example: VAULT_ID (e.g. 1)">-msvaultresetrelease (Reset release)</option>
+        <option value="-msvaultgetvaults" title="Get vaults for an identity. Example: IDENTITY (e.g. your ID)">-msvaultgetvaults (Get vaults)</option>
+        <option value="-msvaultgetreleasestatus" title="Get the release status of a vault. Example: VAULT_ID (e.g. 1)">-msvaultgetreleasestatus (Get release status)</option>
+        <option value="-msvaultgetbalanceof" title="Get the vault's balance. Example: VAULT_ID (e.g. 1)">-msvaultgetbalanceof (Get balance)</option>
+        <option value="-msvaultgetvaultname" title="Get the vault name. Example: VAULT_ID (e.g. 1)">-msvaultgetvaultname (Get vault name)</option>
+        <option value="-msvaultgetrevenueinfo" title="Retrieve revenue information for a vault.">-msvaultgetrevenueinfo (Get revenue info)</option>
+        <option value="-msvaultgetfees" title="Retrieve fee details for a vault.">-msvaultgetfees (Get vault fees)</option>
+        <option value="-msvaultgetvaultowners" title="Retrieve the list of vault owners. Example: VAULT_ID (e.g. 1)">-msvaultgetvaultowners (Get vault owners)</option>
+      </optgroup>
+    </select>
+    <div id="commandDescription" class="command-description"></div>
+    <div id="paramsDiv"></div>
+  </div>
+
+  <div class="section">
+    <button id="runCommand">Run Command</button>
+  </div>
+
+  <div class="section">
+    <h2>Logs</h2>
+    <div id="logs"></div>
+  </div>
+
+  <script>
+    // Predefine commands with required parameters.
+    // The keys must match the optgroup values.
+    const commands = {
+      "-help": [],
+      "-showkeys": [],
+      "-getbalance": ["IDENTITY"],
+      "-getasset": ["IDENTITY"],
+      "-queryassets": ["QUERY_TYPE", "QUERY_STRING"],
+      "-sendtoaddress": ["TARGET_IDENTITY", "AMOUNT"],
+      "-sendtoaddressintick": ["TARGET_IDENTITY", "AMOUNT", "TICK"],
+      "-qutilsendtomanyv1": ["FILE"],
+      "-qutilburnqubic": ["AMOUNT"],
+      "-qutilsendtomanybenchmark": ["DESTINATION_COUNT", "NUM_TRANSFERS_EACH"],
+      "-gettickdata": ["TICK_NUMBER", "OUTPUT_FILE_NAME"],
+      "-getquorumtick": ["COMP_LIST_FILE", "TICK_NUMBER"],
+      "-getcomputorlist": ["OUTPUT_FILE_NAME"],
+      "-getnodeiplist": [],
+      "-gettxinfo": ["TX_ID"],
+      "-checktxontick": ["TICK_NUMBER", "TX_ID"],
+      "-checktxonfile": ["TX_ID", "TICK_DATA_FILE"],
+      "-readtickdata": ["FILE_NAME", "COMPUTOR_LIST"],
+      "-sendcustomtransaction": ["TARGET_IDENTITY", "TX_TYPE", "AMOUNT", "EXTRA_BYTE_SIZE", "EXTRA_BYTE_IN_HEX"],
+      "-dumpspectrumfile": ["SPECTRUM_BINARY_FILE", "OUTPUT_CSV_FILE"],
+      "-dumpuniversefile": ["UNIVERSE_BINARY_FILE", "OUTPUT_CSV_FILE"],
+      "-dumpcontractfile": ["CONTRACT_BINARY_FILE", "CONTRACT_ID", "OUTPUT_CSV_FILE"],
+      "-makeipobid": ["CONTRACT_INDEX", "NUMBER_OF_SHARE", "PRICE_PER_SHARE"],
+      "-getipostatus": ["CONTRACT_INDEX"],
+      "-getsysteminfo": [],
+      "-getcurrenttick": [],
+      "-sendspecialcommand": ["COMMAND_IN_NUMBER"],
+      "-togglemainaux": ["MODE_0", "MODE_1"],
+      "-setsolutionthreshold": ["EPOCH", "SOLUTION_THRESHOLD"],
+      "-refreshpeerlist": [],
+      "-forcenexttick": [],
+      "-reissuevote": [],
+      "-sendrawpacket": ["DATA_IN_HEX", "SIZE"],
+      "-synctime": [],
+      "-getminingscoreranking": [],
+      "-getvotecountertx": ["COMPUTOR_LIST_FILE", "TICK"],
+      "-qxgetfee": [],
+      "-qxissueasset": ["ASSET_NAME", "NUMBER_OF_UNIT", "UNIT_OF_MEASUREMENT", "NUM_DECIMAL"],
+      "-qxtransferasset": ["ASSET_NAME", "ISSUER_IN_HEX", "NEW_OWNER_IDENTITY", "AMOUNT_OF_SHARE"],
+      "-qxorder": ["ACTION", "BID/ASK", "ISSUER", "ASSET_NAME", "PRICE", "NUMBER_OF_SHARE"],
+      "-qxgetorder": ["TYPE", "BID/ASK", "ISSUER_ENTITY", "ASSET_NAME", "OFFSET"],
+      "-qxtransferrights": ["ASSET_NAME", "ISSUER_ID", "NEW_MANAGING_CONTRACT", "NUMBER_OF_SHARES"],
+      "-qtrygetbasicinfo": [],
+      "-qtryissuebet": [],
+      "-qtrygetactivebet": [],
+      "-qtrygetactivebetbycreator": ["BET_CREATOR_ID"],
+      "-qtrygetbetinfo": ["BET_ID"],
+      "-qtrygetbetdetail": ["BET_ID", "OPTION_ID"],
+      "-qtryjoinbet": ["BET_ID", "NUMBER_OF_BET_SLOT", "AMOUNT_PER_SLOT", "PICKED_OPTION"],
+      "-qtrypublishresult": ["BET_ID", "WIN_OPTION"],
+      "-qtrycancelbet": ["BET_ID"],
+      "-gqmpropsetproposal": ["PROPOSAL_STRING"],
+      "-gqmpropclearproposal": [],
+      "-gqmpropgetproposals": ["PROPOSAL_INDEX_OR_GROUP"],
+      "-gqmpropvote": ["PROPOSAL_INDEX", "VOTE_VALUE"],
+      "-gqmpropgetvote": ["PROPOSAL_INDEX", "VOTER_IDENTITY"],
+      "-gqmpropgetresults": ["PROPOSAL_INDEX"],
+      "-gqmpropgetrevdonation": [],
+      "-ccfsetproposal": ["PROPOSAL_STRING"],
+      "-ccfclearproposal": [],
+      "-ccfgetproposals": ["PROPOSAL_INDEX_OR_GROUP"],
+      "-ccfvote": ["PROPOSAL_INDEX", "VOTE_VALUE"],
+      "-ccfgetvote": ["PROPOSAL_INDEX", "VOTER_IDENTITY"],
+      "-ccfgetresults": ["PROPOSAL_INDEX"],
+      "-ccflatesttransfers": [],
+      "-qearnlock": ["LOCK_AMOUNT"],
+      "-qearnunlock": ["UNLOCKING_AMOUNT", "LOCKED_EPOCH"],
+      "-qearngetlockinfoperepoch": ["EPOCH"],
+      "-qearngetuserlockedinfo": ["IDENTITY", "EPOCH"],
+      "-qearngetstateofround": ["EPOCH"],
+      "-qearngetuserlockstatus": ["IDENTITY"],
+      "-qearngetunlockingstatus": ["IDENTITY"],
+      "-qearngetstatsperepoch": ["EPOCH"],
+      "-qearngetburnedandboostedstats": [],
+      "-qearngetburnedandboostedstatsperepoch": ["EPOCH"],
+      "-qvaultsubmitauthaddress": ["NEW_ADDRESS"],
+      "-qvaultchangeauthaddress": ["NUMBER_OF_CHANGED_ADDRESS"],
+      "-qvaultsubmitfees": ["NEW_QCAPHOLDER_PERMILLE", "NEW_REINVESTING_PERMILLE", "NEW_DEV_PERMILLE"],
+      "-qvaultchangefees": ["NEW_QCAPHOLDER_PERMILLE", "NEW_REINVESTING_PERMILLE", "NEW_DEV_PERMILLE"],
+      "-qvaultsubmitreinvestingaddress": ["NEW_ADDRESS"],
+      "-qvaultchangereinvestingaddress": ["NEW_ADDRESS"],
+      "-qvaultsubmitadminaddress": ["NEW_ADDRESS"],
+      "-qvaultchangeadminaddress": ["NEW_ADDRESS"],
+      "-qvaultgetdata": [],
+      "-qvaultsubmitbannedaddress": ["NEW_ADDRESS"],
+      "-qvaultsavebannedaddress": ["NEW_ADDRESS"],
+      "-qvaultsubmitunbannedaddress": ["NEW_ADDRESS"],
+      "-qvaultsaveunbannedaddress": ["NEW_ADDRESS"],
+      "-msvaultregistervault": ["REQUIRED_APPROVALS", "VAULT_NAME", "OWNER_ID_COMMA_SEPARATED"],
+      "-msvaultdeposit": ["VAULT_ID", "AMOUNT"],
+      "-msvaultreleaseto": ["VAULT_ID", "AMOUNT", "DESTINATION_IDENTITY"],
+      "-msvaultresetrelease": ["VAULT_ID"],
+      "-msvaultgetvaults": ["IDENTITY"],
+      "-msvaultgetreleasestatus": ["VAULT_ID"],
+      "-msvaultgetbalanceof": ["VAULT_ID"],
+      "-msvaultgetvaultname": ["VAULT_ID"],
+      "-msvaultgetrevenueinfo": [],
+      "-msvaultgetfees": [],
+      "-msvaultgetvaultowners": ["VAULT_ID"]
+    };
+
+    // Elements
+    const commandSelect = document.getElementById('commandSelect');
+    const paramsDiv = document.getElementById('paramsDiv');
+    const runButton = document.getElementById('runCommand');
+    const logsDiv = document.getElementById('logs');
+    const commandDescription = document.getElementById('commandDescription');
+
+    // Helper function to append messages to the logs area
+    function appendLog(message) {
+      const p = document.createElement('p');
+      p.textContent = message;
+      logsDiv.appendChild(p);
+      logsDiv.scrollTop = logsDiv.scrollHeight;
+    }
+
+    // Render input fields for parameters based on the selected command
+    function renderParams() {
+      const cmd = commandSelect.value;
+      paramsDiv.innerHTML = ''; // Clear previous inputs
+      const params = commands[cmd];
+      if (params && params.length > 0) {
+        params.forEach(param => {
+          const div = document.createElement('div');
+          div.classList.add('param-input');
+          const label = document.createElement('label');
+          label.textContent = param + ': ';
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.id = 'param_' + param;
+          input.placeholder = `<${param}>`;
+          div.appendChild(label);
+          div.appendChild(input);
+          paramsDiv.appendChild(div);
+        });
+      }
+    }
+
+    // Update parameter inputs and command description when the selected command changes
+    commandSelect.addEventListener('change', () => {
+      renderParams();
+      const selectedOption = commandSelect.options[commandSelect.selectedIndex];
+      commandDescription.textContent = selectedOption.title;
+    });
+
+    // Render parameters for the initial command on load
+    renderParams();
+    commandDescription.textContent = commandSelect.options[commandSelect.selectedIndex].title;
+
+    // When the user clicks "Run Command", build the command string from the basic config, selected command and inputs
+    runButton.addEventListener('click', async () => {
+      let fullCmd = '';
+
+      // Append basic configuration if provided
+      const conf = document.getElementById('conf').value.trim();
+      if (conf) fullCmd += ` -conf ${conf}`;
+      const seed = document.getElementById('seed').value.trim();
+      if (seed) fullCmd += ` -seed ${seed}`;
+      const nodeip = document.getElementById('nodeip').value.trim();
+      if (nodeip) fullCmd += ` -nodeip ${nodeip}`;
+      const nodeport = document.getElementById('nodeport').value.trim();
+      if (nodeport) fullCmd += ` -nodeport ${nodeport}`;
+      const scheduletick = document.getElementById('scheduletick').value.trim();
+      if (scheduletick) fullCmd += ` -scheduletick ${scheduletick}`;
+      const forceChecked = document.getElementById('force').checked;
+      if (forceChecked) fullCmd += ` -force`;
+
+      // Append selected command and its parameters
+      const cmd = commandSelect.value;
+      fullCmd += ` ${cmd}`;
+      const params = commands[cmd];
+      if (params && params.length > 0) {
+        params.forEach(param => {
+          const input = document.getElementById('param_' + param);
+          fullCmd += ' ' + (input.value.trim() || `<${param}>`);
+        });
+      }
+
+      appendLog(`Running command: ${fullCmd}`);
+      try {
+        // Use the IPC-exposed API to run the Docker command
+        const result = await window.electronAPI.runDocker(fullCmd);
+        appendLog(`Output: ${result}`);
+      } catch (err) {
+        appendLog(`Error: ${err}`);
+      }
+    });
+  </script>
+</body>
+</html>
