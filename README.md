@@ -2,7 +2,7 @@ _Last updated: 2025-02-24_
 
 # Qubic CLI Electron Interface
 
-This Electron app is a front-end version for the [Qubic CLI](https://github.com/qubic/qubic-cli) tool via Docker. It lets users configure settings, run commands, and view logs—all in a user-friendly interface. Compiling the Qubic CLI directly on macOS or Windows is quite hard and only works well with Linux. The reason we use Docker is to be able to run it on any computer no matter the OS. The Docker image is a compiled version for Linux.
+This Electron app is a front-end version for the [Qubic CLI](https://github.com/qubic/qubic-cli) tool via Docker. It lets users configure settings, run commands, and view logs—all in a user-friendly interface. The Docker image is a compiled version for Linux.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ This Electron app is a front-end version for the [Qubic CLI](https://github.com/
 1. **Run the Docker Image**: If you haven't run it before or there's a new version, use:
 
    ```bash
-   docker run --rm --platform linux/amd64 -d --name qubic-cli qubic-cli
+   docker buildx build --platform linux/amd64 -t qubic-cli --load .
    ```
 
 2. **Install Dependencies**: Run the following command to install the necessary Node.js packages:
